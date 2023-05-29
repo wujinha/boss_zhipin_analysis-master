@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block content%}
+{% verbatim %}
+<div id="app" v-cloak>
+    <el-container>
+        <el-header class="top-header">
+            <el-row type="flex" justify="space-between" style="align-items: center;height:100%;">
+                <el-col :span="6">
+                    <el-link href="/" :underline="false" style="font-size:150%" type="info">招聘信息</el-link>
+                </el-col>
+                <el-col :span="6" class="el-link">
+                    <el-dropdown @command="handleCommand">
+                        <span class="el-dropdown-link">
+                            欢迎, {{ username }}<i class="el-icon-arrow-down el-icon--right"></i>
+                        </span>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item command="gotoAdmin">进入后台</el-dropdown-item>
+                                <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </el-col>
+            </el-row>
+        </el-header>
+        <el-main style="display:flex;justify-content: center;">
+            <div style="width:80%;padding:10px;">
+                <el-row type="flex" justify="space-between" style="margin-bottom: 10px;">
+                    <el-col :span="10">
+                        <el-link type="primary" :underline="false" style="font-size: 17px;">{{job.job_name}}
+                        </el-link>
+                    </el-col>
+                    <el-col :span="8">
+                        <el-link type="primary" :underline="false" style="font-size: 17px;">{{job.company_name}}
+                        </el-link>
+                    </el-col>
+                </el-row>
+                <el-row type="flex" justify="space-between" style="margin-bottom: 10px;">
+                    <el-col :span="10">
+                        <span
+                            style="font-size:16px;color:darksalmon;margin-right:10px;">{{job.providesalary_text || '面议'}}</span>
+                        <span style="color:#61687c">{{job.attribute}}</span>
+                    </el-col>
+                    <el-col :span="8">
+                        <span style="color:#61687c;margin-right:5px;">{{job.companytype_text}}</span>
+                        <span style="color:#61687c">{{job.companysize_text}}</span>
+                    </el-col>
+                </el-row>
+                <el-row type="flex" justify="space-between" style="margin-bottom: 5px;">
+                    <el-col :span="10" v-if="job.jobwelf">
+                        <el-tag v-for="welf in job.jobwelf.split(' ')" :key="welf" style="margin:0 5px 5px 0;"
+                            size="small" type="success" plain>
+                            {{welf}}</el-tag>
+                    </el-col>
+                    <el-col :span="8">
+                        <span style="color:#61687c">{{job.companyind_text}}</span>
+                    </el-col>
+                </el-row>
+                <el-divider></el-divider>
+                <h2 class="prop">
+                    <span class="bname">职位信息</span>
+                </h2>
+                <div v-html="job.jobinfo" style="line-height: 28px;color: #333;word-wrap: break-word;"></div>
+            </div>
+        </el-main>
+    </el-container>
+</div>
+{% endverbatim %}
+{% endblock %}
+
+{% block script %}
+<script>
+    const jobid = '{{ jobid }}';
+    const username = '{{ user.username }}';
+    const App = {
+        el: '#app',
+        data() {
+            return {
+                username,
+                jobid,
+                job: {}
+            }
+        },
+        methods: {
+            handleCommand(cmd) {
+                if (cmd === 'gotoAdmin') {
+                    window.location.href = "/admin"
+                } else if (cmd === 'logout') {
+                    window.location.href = "/user/logout"
+                }
+            }
+        },
+        beforeMount() {
+            axios.get(`/ajax/job/${jobid}/`).then(res => {
+                this.job = res.data
+            })
+        }
+    }
+    new Vue(App);
+</script>
+{% endblock %}
+
+{% block style%}
+<style scoped>
+    .bname {
+        height: 20px;
+        line-height: 20px;
+        font-size: 18px;
+        font-weight: bold;
+        text-indent: 0;
+        margin-top: 15px;
+        padding-left: 15px;
+        border-left: 4px solid #ff6000;
+    }
+
+    [v-cloak] {
+        display: none;
+    }
+</style>
+{% endblock %}

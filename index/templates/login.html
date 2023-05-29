@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block content%}
+{% verbatim %}
+<div id="app">
+    <div class="abs_center">
+        <el-card class="box-card" v-show="isLogin">
+            <template #header>
+                <p style="font-size:18px;color:white;text-align: center;margin:0">招聘信息数据分析</p>
+            </template>
+            <el-form :model="loginForm" :rules="rules" ref="loginForm">
+                <el-form-item prop="username">
+                    <el-input placeholder="请输入用户名" v-model="loginForm.username" @keyup.enter.native="onLogin">
+                        <template #prefix>
+                            <i class="el-input__icon el-icon-user"></i>
+                        </template>
+                    </el-input>
+                </el-form-item>
+                <el-form-item prop="password">
+                    <el-input placeholder="请输入密码" v-model="loginForm.password" show-password
+                        @keyup.enter.native="onLogin">
+                        <template #prefix>
+                            <i class="el-input__icon el-icon-lock"></i>
+                        </template>
+                    </el-input>
+                </el-form-item>
+                <el-form-item v-if="loginTip">
+                    <el-alert :title="loginTip.title" :type="loginTip.type" effect="light" :closable="false">
+                </el-form-item>
+                <el-form-item>
+                    <el-button style="width:100%;" type="primary" @click="onLogin">登录
+                    </el-button>
+                </el-form-item>
+                <el-link type="info" :underline="false" @click.prevent="isLogin=false">还没帐号? 立即注册</el-link>
+            </el-form>
+        </el-card>
+
+        <el-card class="box-card" v-show="!isLogin">
+            <template #header>
+                <p style="font-size:18px;color:white;text-align: center;margin:0">招聘信息</p>
+            </template>
+            <el-form :model="signupForm" :rules="rules" ref="signupForm">
+                <el-form-item prop="username">
+                    <el-input placeholder="请输入用户名" v-model="signupForm.username" @keyup.enter.native="onSignup">
+                        <template #prefix>
+                            <i class="el-input__icon el-icon-user"></i>
+                        </template>
+                    </el-input>
+                </el-form-item>
+                <el-form-item prop="password">
+                    <el-input placeholder="请输入密码" v-model="signupForm.password" show-password
+                        @keyup.enter.native="onSignup">
+                        <template #prefix>
+                            <i class="el-input__icon el-icon-lock"></i>
+                        </template>
+                    </el-input>
+                </el-form-item>
+                <el-form-item prop="password2">
+                    <el-input placeholder="确认密码" v-model="signupForm.password2" show-password
+                        @keyup.enter.native="onSignup">
+                        <template #prefix>
+                            <i class="el-input__icon el-icon-lock"></i>
+                        </template>
+                    </el-input>
+                </el-form-item>
+                <el-form-item v-if="registerTip">
+                    <el-alert :title="registerTip.title" :type="registerTip.type" effect="light" :closable="false">
+                </el-form-item>
+                <el-form-item>
+                    <el-button style="width:100%;" type="primary" @click="onSignup">注册
+                    </el-button>
+                </el-form-item>
+                <el-link type="info" :underline="false" @click.prevent="isLogin=true">已有帐号? 立即登录</el-link>
+            </el-form>
+        </el-card>
+    </div>
+</div>
+{% endverbatim %}
+{% endblock %}
+
+{% block script %}
+<script>
+    const App = {
+        el: "#app",
+        data() {
+            var checkPassword2 = (rule, value, callback) => {
+                if (value !== this.signupForm.password) {
+                    callback(new Error('两次输入密码不一致'));
+                } else {
+                    callback();
+                }
+            }
+            return {
+                isLogin: true,
+                loginTip: null,
+                registerTip: null,
+                loginForm: {
+                    username: '',
+                    password: ''
+                },
+                signupForm: {
+                    username: '',
+                    password: '',
+                    password2: ''
+                },
+                rules: {
+                    username: [{
+                        required: true,
+                        message: '请输入用户名',
+                        trigger: 'blur'
+                    },
+                    {
+                        min: 5,
+                        max: 10,
+                        message: '长度在 5 到 10 个字符',
+                        trigger: 'blur'
+                    }
+                    ],
+                    password: [{
+                        required: true,
+                        message: '请输入密码',
+                        trigger: 'blur'
+                    },
+                    {
+                        min: 6,
+                        max: 16,
+                        message: '长度在 6 到 16 个字符',
+                        trigger: 'blur'
+                    }
+                    ],
+                    password2: [{
+                        required: true,
+                        message: '请再次输入密码',
+                        trigger: 'blur'
+                    },
+                    {
+                        min: 6,
+                        max: 16,
+                        message: '长度在 6 到 16 个字符',
+                        trigger: 'blur'
+                    }, {
+                        validator: checkPassword2,
+                        trigger: 'blur'
+                    }
+                    ]
+                }
+            };
+        },
+        methods: {
+            onLogin() {
+                this.$refs['loginForm'].validate(valid => {
+                    if (valid) {
+                        axios.post('/user/login/', this.loginForm).then(response => {
+                            if (response.data.code === 1) {
+                                // this.$notify({
+                                //     title: '登录失败',
+                                //     message: response.data.message,
+                                //     position: 'bottom-right',
+                                //     type: 'warning'
+                                // })
+                                // this.$message({
+                                //     message: response.data.message,
+                                //     type: 'error',
+                                //     offset: 400,
+                                // });
+                                this.loginTip = {
+                                    title: response.data.message,
+                                    type: "error"
+                                }
+                            } else if (response.data.code === 2) {
+                                // redirect
+                                // this.$message.success('登录成功');
+                                this.loginTip = {
+                                    title: "登录成功",
+                                    type: "success"
+                                }
+                                window.location.replace(response.data.data)
+                            } else {
+                                console.log(this.loginForm)
+                            }
+                        })
+                    } else {
+                        return false
+                    }
+                })
+            },
+            onSignup() {
+                this.$refs['signupForm'].validate(valid => {
+                    if (valid) {
+                        axios.post('/user/signup/', this.signupForm).then(response => {
+                            if (response.data.code === 1) {
+                                // this.$message.error(response.data.message);
+                                this.registerTip = {
+                                    title: response.data.message,
+                                    type: "error"
+                                }
+                            } else if (response.data.code === 2) {
+                                // redirect
+                                // this.$message.success('注册成功');
+                                // this.$notify({
+                                //     title: '注册成功',
+                                //     message: '注册成功，即将跳转',
+                                //     position: 'bottom-right',
+                                //     type: 'success'
+                                // });
+                                this.registerTip = {
+                                    title: '注册成功',
+                                    type: "success"
+                                }
+                                window.location.replace(response.data.data)
+                            } else {
+                                console.log(this.signupForm)
+                            }
+                        })
+                    } else {
+                        return false
+                    }
+                })
+            }
+        }
+    };
+    new Vue(App)
+</script>
+{% endblock %}
+
+{% block style %}
+<style scoped>
+    .abs_center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+
+    .box-card {
+        min-width: 30%;
+    }
+
+    .el-card__header {
+        background-color: #409EFF;
+    }
+</style>
+{% endblock %}

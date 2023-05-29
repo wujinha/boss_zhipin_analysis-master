@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block content%}
+{% verbatim %}
+<div id="app" v-cloak>
+    <el-container style="height:100%;">
+        <el-aside width="200px" style="height:100%;">
+            <el-menu style="height:100%;" router :default-active="active" :default-openeds="['1','2']">
+                <h3 style="text-align: center;font-size:15px;color:#606266;">招聘信息数据分析</h3>
+                <el-submenu index="1">
+                    <template slot="title">
+                        <i class="el-icon-user"></i>
+                        <span>个人中心</span>
+                    </template>
+                    <el-menu-item index="/profile">个人信息</el-menu-item>
+                    <el-menu-item index="/password">修改密码</el-menu-item>
+                </el-submenu>
+                <el-menu-item index="/table">
+                    <i class="el-icon-data-line"></i>
+                    数据总览</el-menu-item>
+                <el-submenu index="2">
+                    <template slot="title">
+                        <i class="el-icon-pie-chart"></i>
+                        <span>数据可视化</span>
+                    </template>
+                    <el-menu-item index="/area">工作地区分析</el-menu-item>
+                    <el-menu-item index="/workyear">工作经验分析</el-menu-item>
+                    <el-menu-item index="/salary">薪资水平分析</el-menu-item>
+                    <el-menu-item index="/degree">学历水平分析</el-menu-item>
+                </el-submenu>
+                <el-menu-item index="/recommand">
+                    <i class="el-icon-guide"></i>
+                    推荐职位</el-menu-item>
+                <el-menu-item index="/predict">
+                    <i class="el-icon-magic-stick"></i>
+                    薪资预测</el-menu-item>
+            </el-menu>
+        </el-aside>
+        <el-main style="background-color: #f0f2f5;padding: 0;">
+            <div style="background-color: white;
+            display: flex;
+            height: 60px;
+            justify-content: flex-end;
+            align-items: center;
+        ">
+                <el-dropdown @command="handleCommand" style="margin-right:10px;">
+                    <span class="el-dropdown-link">
+                        欢迎, {{ username }}<i class="el-icon-arrow-down el-icon--right"></i>
+                    </span>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item command="gotoAdmin">进入后台</el-dropdown-item>
+                            <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+            </div>
+            <div id="main">
+                <router-view></router-view>
+            </div>
+        </el-main>
+    </el-container>
+</div>
+{% endverbatim %}
+{% endblock %}
+
+{% block script %}
+<script src="../static/predict.js"></script>
+<script src="../static/recommand.js"></script>
+<script src="../static/password.js"></script>
+<script src="../static/profile.js"></script>
+<script src="../static/degree.js"></script>
+<script src="../static/area.js"></script>
+<script src="../static/salary.js"></script>
+<script src="../static/workyear.js"></script>
+<script src="../static/table.js"></script>
+<script src="../static/router.js"></script>
+<script>
+    const username = '{{ user.username }}';
+    const App = {
+        router,
+        el: '#app',
+        data() {
+            return {
+                username,
+                active: "/table",
+            }
+        },
+        beforeMount() {
+            let path = this.$route.path
+            if (path === '/') {
+                this.$router.push("/table")
+            }
+            this.active = path
+        },
+        methods: {
+            handleClick() {
+                this.doSearch()
+            },
+            handleCommand(cmd) {
+                if (cmd === 'gotoAdmin') {
+                    window.location.href = "/admin"
+                } else if (cmd === 'logout') {
+                    window.location.href = "/user/logout"
+                }
+            },
+        },
+    };
+    new Vue(App);
+</script>
+{% endblock %}
+
+{% block style%}
+<style scoped>
+    [v-cloak] {
+        display: none;
+    }
+
+    #main {
+        margin: 24px 16px;
+        background-color: white;
+    }
+</style>
+{% endblock %}
